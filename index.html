@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Orders App</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to right, #4facfe, #00c6ff);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Card */
+.container {
+    background: #fff;
+    padding: 25px;
+    border-radius: 12px;
+    width: 350px;
+    box-shadow: 0px 5px 20px rgba(0,0,0,0.2);
+}
+
+/* Title */
+h2 {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+/* Inputs */
+input {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+/* Button */
+button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 6px;
+    background: #3498db;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #2980b9;
+}
+
+/* Section Divider */
+hr {
+    margin: 20px 0;
+}
+
+/* Orders List */
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+/* Order item */
+li {
+    background: #f1f1f1;
+    margin: 5px 0;
+    padding: 8px;
+    border-radius: 5px;
+}
+
+/* Info Box */
+.info {
+    background: #dff6ff;
+    padding: 8px;
+    border-radius: 5px;
+    margin-top: 10px;
+    font-size: 14px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h2>🛒 Create Order</h2>
+
+    <label>Name</label>
+    <input type="text" id="name" placeholder="Enter name">
+
+    <label>Product</label>
+    <input type="text" id="product" placeholder="Enter product">
+
+    <label>Quantity</label>
+    <input type="number" id="quantity" placeholder="Enter quantity">
+
+    <button onclick="createOrder()">+ Create Order</button>
+
+    <hr>
+
+    <h2>📋 All Orders</h2>
+
+    <button onclick="getOrders()">Load Orders</button>
+
+    <div id="info" class="info">No orders found.</div>
+
+    <ul id="ordersList"></ul>
+
+</div>
+
+<script>
+
+// 👉 PASTE YOUR API URL HERE
+const API_URL = "https://px5dz9iz8g.execute-api.us-east-1.amazonaws.com/orders";
+function createOrder() {
+    const name = document.getElementById("name").value;
+    const product = document.getElementById("product").value;
+    const quantity = document.getElementById("quantity").value;
+
+    fetch(API_URL, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ name, product, quantity })
+    })
+    .then(res => res.json())
+    .then(() => {
+        alert("Order Created Successfully");
+        document.getElementById("name").value = "";
+        document.getElementById("product").value = "";
+        document.getElementById("quantity").value = "";
+    })
+    .catch(err => console.error(err));
+}
+
+function getOrders() {
+    fetch(API_URL)
+    .then(res => res.json())
+    .then(data => {
+
+        console.log("API response:", data); // DEBUG
+
+        const list = document.getElementById("ordersList");
+        const info = document.getElementById("info");
+
+        list.innerHTML = "";
+
+        // ✅ FIX: use data directly (no JSON.parse)
+        if (!Array.isArray(data)) {
+            info.innerText = "Unexpected response from API";
+            console.error("Not an array:", data);
+            return;
+        }
+
+        if (data.length === 0) {
+            info.innerText = "No orders found.";
+            return;
+        }
+
+        info.innerText = "Orders loaded successfully.";
+
+        data.forEach(order => {
+            const li = document.createElement("li");
+            li.textContent = `${order.name} - ${order.product} - ${order.quantity}`;
+            list.appendChild(li);
+        });
+
+    })
+    .catch(err => console.error(err));
+}
+</script>
+
+</body>
+</html>
